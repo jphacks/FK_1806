@@ -6,7 +6,10 @@ import pyaudio
 import wave
 from datetime import datetime
 import matplotlib.pyplot as plt
+import urllib.request
+import urllib.parse
 import concurrent.futures
+
 
 def listenSNAP_withMike():
     data = stream.read(chunk)
@@ -19,10 +22,9 @@ def listenSNAP_withMike():
         print('snapped!')
         return True
 
-
 # number 1 => ByeBye
-# number 2 =>
-# number 3 =>
+# number 2 => HandUp
+# number 3 => Safe
 def recognizingGesture(keypoint, old_keypoint, number):
     global delta_time   # mainの方で使うから
 
@@ -55,6 +57,9 @@ def recognizingGesture(keypoint, old_keypoint, number):
                 byebye_time = -(howlong_byebye_interval+1)
                 print('Bye Bye!')
 
+                executor = concurrent.futures.ProcessPoolExecutor(max_workers=2)
+                executor.submit(get(number))
+
     # HandUp
     elif number == 2:
         threshold_handupSpeed = 25
@@ -66,6 +71,9 @@ def recognizingGesture(keypoint, old_keypoint, number):
         if hand_down == True and (r_elbow[1] - keypoint[1]) >= 0 and -pixel_per_second[1] >= threshold_handupSpeed and np.abs(pixel_per_second[1]) <= outliers:
             hand_down = False
             print("HandUp!")
+
+            executor = concurrent.futures.ProcessPoolExecutor(max_workers=2)
+            executor.submit(get(number))
 
     # Safe
     elif number == 3:
@@ -87,6 +95,19 @@ def recognizingGesture(keypoint, old_keypoint, number):
                 safe_interval = -howlong_safe_interval
                 print('Safe!')
 
+                executor = concurrent.futures.ProcessPoolExecutor(max_workers=2)
+                executor.submit(get(number))
+
+def get(gesture_number):
+	params = {
+    	"number": gesture_number
+	}
+	p = urllib.parse.urlencode(params)
+	url = "http://fullfill.sakura.ne.jp/JPHACKS2018/server.php?" + p
+
+	with urllib.request.urlopen(url) as res:
+		html = res.read().decode("utf-8")
+		print(html)
 
 # ------------------------------------------------------------------------
 
