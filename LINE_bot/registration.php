@@ -36,8 +36,7 @@ if(strpos($sent_message, "登録")!==false){
     "IRregister=no"
     ));
 }
-
-//
+// 上記のIR機器登録のconfirmに対する返答に対して
 if($IRregister=="yes"){
   sending(reply("SNAPが赤外線登録モードになりました！${kirara}\n赤外線受信部に向かって登録する赤外線を送信してください"));
 }if($IRregister=="no"){
@@ -68,6 +67,7 @@ function reply($message){
 
   $post_data = [
     "replyToken" => $reply_token,
+
     "messages" => [
     [
       "type" => "text",
