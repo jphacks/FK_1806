@@ -45,39 +45,27 @@ $cony_cute_smile = toEmoji('10009D');   // cony cute smile
 if(strpos($sent_message, "使い方")!==false or $how_to==1){
   sending(reply("使い方ここで説明できればなと"));
 }
-// IR機器登録
-if(strpos($sent_message, "登録")!==false){
-  sending(confirm(
-    "赤外線の登録を始めますか？${cony_cute_smile}",
-    "赤外線の登録を始めますか？${cony_cute_smile}",
-    "はい",
-    "IRregister=yes",
-    "いいえ",
-    "IRregister=no"
-    ));
-}
-// 上記のIR機器登録のconfirmに対する返答に対して
-if($IRregister=="yes"){
+
+// IR機器登録用
+if(strpos($sent_message, "機器の登録")!==false){
   sending(buttons(
   "登録番号を選択してください\nすでに登録されている番号は上書きされます",
   "登録番号を選択してください\nすでに登録されている番号は上書きされます",
-  "1",
+  "1:ByeBye",
   "gesture_index=1&mode=1",
-  "2",
+  "2:HandUp",
   "gesture_index=2&mode=1",
-  "3",
+  "3:Safe",
   "gesture_index=3&mode=1"
   ));
 }
-else if($IRregister=="no"){
-  sending(buttons(
-    "中止しました\n使い方を知りたい場合は以下のボタンを押してみてください${brown}",
-    "中止しました\n使い方を知りたい場合は以下のボタンを押してみてください${brown}",
-    "使い方を見る",
-    "how_to=1"
-  ));
+
+// ジェスチャ登録用
+if(strpos($sent_message, "ジェスチャ")!==false or $how_to==1){
+  sending(reply("ジェスチャ登録は後日実装予定です！\nしばしお待ちください"));
 }
 
+// ラズパイ送信用
 if($mode==1){
   $content = file_get_contents("http://73161605.ngrok.io/cgi-bin/main.py");
   if ($content){
@@ -89,7 +77,7 @@ if($mode==1){
 
 
 // ブラウザで表示された時のログ表示
-print("ちゃっす");
+print("Hello");
 
 // -------------------------------------------------------------------------
 // 16進数から絵文字に変換する関数
