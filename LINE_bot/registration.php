@@ -48,8 +48,8 @@ if(strpos($sent_message, "使い方")!==false or $how_to==1){
 // IR機器登録
 if(strpos($sent_message, "登録")!==false){
   sending(confirm(
-    "〇〇 という名前で赤外線の登録を始めますか？${cony_cute_smile}",
-    "〇〇 という名前で赤外線の登録を始めますか？${cony_cute_smile}",
+    "赤外線の登録を始めますか？${cony_cute_smile}",
+    "赤外線の登録を始めますか？${cony_cute_smile}",
     "はい",
     "IRregister=yes",
     "いいえ",
