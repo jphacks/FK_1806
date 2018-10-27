@@ -101,6 +101,12 @@ if __name__ == "__main__":
         except:
             continue
 
+        # たまに"people"が検出されない時があるっぽい
+        if not data['people']:
+            print('"people" cannot find at', index)
+            frame += 1
+            continue
+
         kp2d = np.array(data['people'][0]['pose_keypoints_2d']).reshape((25,3))   # keypointsの取得
         kp2d[np.where(kp2d[:,2] == 0)] = (0,0,0)   # 信頼度が0の場合x座標，y座標も0にする
 
