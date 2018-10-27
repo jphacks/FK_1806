@@ -24,15 +24,13 @@ stream = p.open(format = FORMAT,
     frames_per_buffer = chunk
 )
 
-cnt = 0
-
 while True:
     data = stream.read(chunk)
     x = np.fft.fft(np.frombuffer(data, dtype="int16") / 32768.0)
     amp = np.abs(x)
     #x = np.frombuffer(data, dtype="int16") / 32768.0
     #if x.max() > threshold:
-    # 大きな音は拾わず、高周波域の総和が高く、最大値が低音でない音を抽出→スナップ音に近い音
+    # 周波数分布に偏りが少なく、高周波域の総和が高く、最大値が低音でない音→スナップ音に近い音を抽出
     if (amp<=noize_threshold).all() and amp[450:512].sum()>snap_threshold and amp[0:512].argmax()>maxamp_threshold:
     	print(amp[450:512].sum())
     	plt.plot(amp)

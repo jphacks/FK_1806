@@ -4,17 +4,15 @@ import cv2
 import os
 import time
 
-# 実行のループをフレーム数に合わせる
-frame = 0
+frame = 0   # 実行のループをフレーム数に合わせる
 one_time = 0
 
 while True:
-    # ループに入った瞬間の時刻を取得
-    frame_time = time.time()
+    frame_time = time.time()   # ループに入った瞬間の時刻を取得
 
     # JSONファイルの前の数字は12桁
     index = "{0:012d}".format(frame)
-    path = os.path.dirname(os.path.abspath(__file__)) + '/outputs/test/'
+    path = os.path.dirname(os.path.abspath(__file__)) + '/outputs/ByeByetest/'
     path2JSONfile = path + index + '_keypoints.json'
 
     # jsonのロード
@@ -24,11 +22,11 @@ while True:
     except:
         continue
 
-    # keypointsの取得
-    kp2d = np.array(data['people'][0]['pose_keypoints_2d']).reshape((25,3))
+    kp2d = np.array(data['people'][0]['pose_keypoints_2d']).reshape((25,3))   # keypointsの取得
+    kp2d[np.where(kp2d[:,2] == 0)] = (0,0,0)   # 信頼度が0の場合x座標，y座標も0にする
 
-    # 信頼度が0の場合x座標，y座標も0にする
-    kp2d[np.where(kp2d[:,2] == 0)] = (0,0,0)
+    kp2d = kp2d[:, 0:2]   # 信頼度は省いておく
+    #print(kp2d)
 
     nose       = kp2d[0]
     l_eye      = kp2d[16]
@@ -56,17 +54,13 @@ while True:
     l_smalltoe = kp2d[20]
     r_smalltoe = kp2d[23]
         
-    if frame != 0: # 前の座標が0の時（検出されたない時）は外れ値として処理しよう
-        # 鼻が検出されている時
-        if nose[0] != 0:
-            # 右目が検出されていたら鼻と右目との距離を距離（ピクセル）の基準とする
-            if r_eye[0] != 0:
+    # 偏差が必要なので2フレーム目から処理を行う
+    if frame != 0: # 前の座標が0の時（検出されてない時）は外れ値として処理しよう
+        if nose[0] != 0:          # 鼻が検出されている時
+            if r_eye[0] != 0:     # 右目が検出されていたら鼻と右目との距離を距離（ピクセル）の基準とする
                 standard_of_distance = nose - r_eye
-                #print('standard_of_distance by r_eye :', standard_of_distance)
-            # 右目が検出されていない時は鼻と左目との距離を距離（ピクセル）の基準とする
-            elif l_eye[0] != 0:
+            elif l_eye[0] != 0:   # 右目が検出されていない時は鼻と左目との距離を距離（ピクセル）の基準とする
                 standard_of_distance = -(nose - l_eye)
-                #print('standard_of_distance by l_eye :', standard_of_distance)
         else:
             frame += 1 # JSONを更新するために必要
             continue
@@ -76,9 +70,6 @@ while True:
 
         delta_pixel_standardized = delta_pixel / standard_of_distance
         pixel_per_second = delta_pixel_standardized / delta_time
-
-        #print('pixel_per_second :', pixel_per_second)
-        #print()
 
         # とりあえずバイバイするジェスチャ→右手首が右ひじより上にあって、内側へある程度早い速度で振った後
         # １秒以内に外側にある程度早い速度で振る
@@ -116,12 +107,7 @@ while True:
     old_l_smalltoe = l_smalltoe
     old_r_smalltoe = r_smalltoe
 
-    # 次フレームまでに現在のフレームを記憶させる
-    old_frame_time = frame_time
-
-    #print('r_wrist :', r_wrist)
-
-    #print(kp2d)
+    old_frame_time = frame_time   # 次フレームまでに現在のフレームを記憶させる
 
     frame += 1
 
