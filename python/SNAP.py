@@ -25,17 +25,19 @@ def getKeyPoints_fromJSON():
     frame = 0   # 実行のループをフレーム数に合わせる
     one_time = 0
     snapped = False
+    delta_time = 0
 
     while True:
         frame_time = time.time()   # ループに入った瞬間の時刻を取得
 
         # JSONファイルの前の数字は12桁
         index = "{0:012d}".format(frame)
-        path = os.path.dirname(os.path.abspath(__file__)) + '/outputs/ByeByetest/'
+        path = os.path.dirname(os.path.abspath(__file__)) + '/outputs/test/'
         path2JSONfile = path + index + '_keypoints.json'
 
-        if listenSNAP_withMike():
-            snapped = True
+        if snapped == False:   # 処理時間軽減のため
+            if listenSNAP_withMike():
+                snapped = True
 
         # jsonのロード
         try:
@@ -76,14 +78,13 @@ def getKeyPoints_fromJSON():
         l_smalltoe = kp2d[20]
         r_smalltoe = kp2d[23]
             
-        # 偏差が必要なので2フレーム目から処理を行う
-        if frame != 0:
-            if snapped == True:
+        if snapped == True:
+            if frame != 0:   # 偏差が必要なので2フレーム目から処理を行う
                 if nose[0] != 0:   # 鼻が検出されている時
                     if r_eye[0] != 0:     # 右目が検出されていたら鼻と右目との距離を距離（ピクセル）の基準とする
-                        standard_of_distance = nose - r_eye
+                        standard_of_distance = np.abs(nose - r_eye)
                     elif l_eye[0] != 0:   # 右目が検出されていない時は鼻と左目との距離を距離（ピクセル）の基準とする
-                        standard_of_distance = -(nose - l_eye)
+                        standard_of_distance = np.abs(nose - l_eye)
                 else:
                     frame += 1 # JSONを更新するために必要
                     continue
@@ -96,13 +97,24 @@ def getKeyPoints_fromJSON():
 
                 # とりあえずバイバイするジェスチャ→右手首が右ひじより上にあって、内側へある程度早い速度で振った後
                 # １秒以内に外側にある程度早い速度で振る
-                if (r_shoulder[1]-r_wrist[1])>=0 and pixel_per_second[0] >= 20 and pixel_per_second[0] <= 50:
+                if (r_shoulder[1] - r_wrist[1])>=0 and pixel_per_second[0] >= 20 and pixel_per_second[0] <= 50:
                     gesture_flag = True
                     one_time = frame_time
-                if (r_shoulder[1]-r_wrist[1])>=0 and pixel_per_second[0] <= -20 and pixel_per_second[0] >= -50:
+                if (r_shoulder[1] - r_wrist[1])>=0 and pixel_per_second[0] <= -20 and pixel_per_second[0] >= -50:
                     interval = frame_time - one_time
                     if interval <= 1:
                         print('Did you Bye Bye?')
+
+                # スナップ音が検知されてから2秒間の間ジェスチャを認識させる
+                interval_of_recognizingGesture += delta_time
+                print('recognizing gesture...')
+
+        else:
+            interval_of_recognizingGesture = 0
+
+        if interval_of_recognizingGesture > 2:
+            snapped = False
+            print('finish recognizing')
 
         old_nose       = nose
         old_l_eye      = l_eye
@@ -134,17 +146,8 @@ def getKeyPoints_fromJSON():
 
         frame += 1
 
-        # スナップ音が検知されてから2秒間の間ジェスチャを認識させる
-        if snapped == True:
-            interval_of_recognizingGesture += delta_time
-            print('recognizing gesture...')
-        else:
-            interval_of_recognizingGesture = 0
 
-        if interval_of_recognizingGesture > 2:
-            snapped = False
-            print('finish recognizing')
-
+# ------------------------------------------------------------------------
 
 if __name__ == "__main__":
     # listenSNAP_withMike で使用する変数
