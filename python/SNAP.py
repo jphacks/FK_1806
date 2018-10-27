@@ -39,54 +39,50 @@ def recognizingGesture(keypoint, old_keypoint, number):
         howlong_byebye_interval = 1
         global byebyeing_time   # mainのとこで定義してるやつ
 
-        # 右手首が右ひじより上にあって、内側(左側)へある程度の速度(x軸)で振った後
-        # 一定時間以内に外側(右側)にある程度の速度(x軸)で振る
-        if (r_elbow[1] - keypoint[1]) >= 0 and pixel_per_second[0] >= threshold_byebyeSpeed and np.abs(pixel_per_second[0]) <= outliers:
-            byebyeing_time = frame_time
-        if (frame_time - byebyeing_time) <= howlong_byebye_interval and (r_elbow[1] - keypoint[1]) >= 0 and pixel_per_second[0] <= -threshold_byebyeSpeed and np.abs(pixel_per_second[0]) <= outliers:
-            byebyeing_time = 0   # フラグ的役割
-            print('Bye Bye!')
+        # Safeとの誤検出が多くなったため、左手の情報も考慮する
+        delta_pixel_left = l_wrist - old_l_wrist
+        delta_pixel_left_standardized = delta_pixel_left / standard_of_distance
+        pixel_per_second_left = delta_pixel_left_standardized / delta_time
+
+        if np.abs(pixel_per_second_left) <= threshold_byebyeSpeed:
+            # 右手首が右ひじより上にあって、内側(左側)へある程度の速度(x軸)で振った後
+            # 一定時間以内に外側(右側)にある程度の速度(x軸)で振る
+            if (r_elbow[1] - keypoint[1]) >= 0 and pixel_per_second[0] >= threshold_byebyeSpeed and np.abs(pixel_per_second[0]) <= outliers:
+                byebyeing_time = frame_time
+            if (frame_time - byebyeing_time) <= howlong_byebye_interval and (r_elbow[1] - keypoint[1]) >= 0 and pixel_per_second[0] <= -threshold_byebyeSpeed and np.abs(pixel_per_second[0]) <= outliers:
+                byebyeing_time = 0
+                print('Bye Bye!')
 
     # HandUp
     elif number == 2:
-        threshold_handupSpeed = 20
+        threshold_handupSpeed = 15
         global hand_down   # 右手首が右ひじよりも下にあるか否か
 
         # 右ひじより右手首が下の状態から、ある程度の速さ(y軸)で右手首が右ひじより上になる
         if (r_elbow[1] - keypoint[1]) < 0:
-        	hand_down = True
+            hand_down = True
         if hand_down == True and (r_elbow[1] - keypoint[1]) >= 0 and pixel_per_second[1] >= threshold_handupSpeed and np.abs(pixel_per_second[1]) <= outliers:
-        	hand_down = False
-        	print("HandUp!")
-    """
-
-    # Swing
-    elif number == 2:
-    	threshold_swingSpeed = 20
-    	howlong_swing_interval = 0.5
-    	global swinging_time   # mainのとこで定義してるやつ
-
-    	# 右手首が右ひじより上、首より右にあって、内側(左側)へある程度の速度(x軸)で振った後
-    	# 一定時間以内に右手首を首より左にする
-    	if (r_shoulder[1] - keypoint[1]) >= 0 and (neck[0] - keypoint[0]) >= 0 and pixel_per_second[0] >= threshold_swingSpeed and pixel_per_second[0] <= outliers:
-    		swinging_time = frame_time
-    	if (frame_time - swinging_time) <= howlong_swing_interval and (neck[0] - keypoint[0]) < 0 and pixel_per_second[0] >= -outliers:
-    		swinging_time = 0   # フラグ的役割
-    		print('Did you Swing?') 
-    """
-
+            hand_down = False
+            print("HandUp!")
+   
     # Safe
     elif number == 3:
         # 左手用
-        delta_pixel_left = l_wrist - old_r_wrist
+        delta_pixel_left = l_wrist - old_l_wrist
         delta_pixel_left_standardized = delta_pixel_left / standard_of_distance
         pixel_per_second_left = delta_pixel_left_standardized / delta_time
 
-        threshold_safeSpeed = 20
+        threshold_safeSpeed = 15
+        howlong_safe_interval = 1
+        global safe_interval
 
-        # 両手をある程度の速度(x軸)で広げた時
-        if pixel_per_second[0] <= -threshold_safeSpeed and pixel_per_second_left[0] >= threshold_safeSpeed:
-        	print('Safe!')
+        # 直前にsafeの判定がない
+        if safe_interval < howlong_safe_interval:
+            safe_interval += delta_time
+            # 両手をある程度の速度(x軸)で広げた時
+            if pixel_per_second[0] <= -threshold_safeSpeed and pixel_per_second_left[0] >= threshold_safeSpeed:
+                safe_interval = 0
+                print('Safe!')
 
 
 # ------------------------------------------------------------------------
@@ -119,6 +115,7 @@ if __name__ == "__main__":
     byebyeing_time = 0
     #swinging_time = 0
     hand_down = False
+    safe_interval = 0
 
     while True:
         frame_time = time.time()   # ループに入った瞬間の時刻を取得
