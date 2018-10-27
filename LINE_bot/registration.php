@@ -1,7 +1,7 @@
 <?php
-
 $fp = fopen('access_token.txt', 'r');
 $access_token = fgets($fp);
+$channelSecret = fgets($fp);
 
 // APIから送信されてきたイベントオブジェクトを取得
 $json_string = file_get_contents('php://input');
@@ -15,6 +15,24 @@ $sent_message = $message->{"text"};   // 追記分、実際にユーザから送
 $postback_data = $json_obj->{"events"}[0]->{"postback"}->{"data"};
 //クエリ文字列を通常の変数に変換
 parse_str($postback_data);
+
+/*
+// HTTPヘッダーを取得
+$headers = getallheaders();
+print_r($headers);
+// HTTPヘッダーから、署名検証用データを取得
+$headerSignature = $headers["X-Line-Signature"];
+// Channel secretを秘密鍵として、JSONデータからハッシュ値を計算
+$httpRequestBody = $json_string;
+$hash = hash_hmac('sha256', $httpRequestBody, $channelSecret, true);
+$signature = base64_encode($hash);
+// HTTPヘッダーから得た値と、計算したハッシュ値を比較
+if($headerSignature !== $signature)
+{
+  print($headerSignature . "//////////". $signature);
+  exit;
+}
+*/
 
 // 絵文字
 $kirara          = toEmoji('100080');   // きらら
@@ -30,8 +48,8 @@ if(strpos($sent_message, "使い方")!==false or $how_to==1){
 // IR機器登録
 if(strpos($sent_message, "登録")!==false){
   sending(confirm(
-    "〇〇 という名前で赤外線の登録を始めますか？${cony_cute_smile}",
-    "〇〇 という名前で赤外線の登録を始めますか？${cony_cute_smile}",
+    "赤外線の登録を始めますか？${cony_cute_smile}",
+    "赤外線の登録を始めますか？${cony_cute_smile}",
     "はい",
     "IRregister=yes",
     "いいえ",
