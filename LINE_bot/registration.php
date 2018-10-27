@@ -16,6 +16,16 @@ $postback_data = $json_obj->{"events"}[0]->{"postback"}->{"data"};
 //クエリ文字列を通常の変数に変換
 parse_str($postback_data);
 
+// Channel secretを秘密鍵として、JSONデータからハッシュ値を計算
+$httpRequestBody = $json_string;
+$hash = hash_hmac('sha256', $httpRequestBody, $channelSecret, true);
+$signature = base64_encode($hash);
+// HTTPヘッダーから得た値と、計算したハッシュ値を比較
+if($headerSignature !== $signature)
+{
+  exit;
+}
+
 // 絵文字
 $kirara          = toEmoji('100080');   // きらら
 $brown           = toEmoji('100084');   // Brown
