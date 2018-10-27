@@ -48,19 +48,19 @@ def recognizingGesture(keypoint, old_keypoint, number):
             print('Bye Bye!')
 
     # HandUp
-	elif number == 2:
-		threshold_handupSpeed = 20
-		global hand_down   # 右手首が右ひじよりも下にあるか否か
+    elif number == 2:
+        threshold_handupSpeed = 20
+        global hand_down   # 右手首が右ひじよりも下にあるか否か
 
-		# 右ひじより右手首が下の状態から、ある程度の速さ(y軸)で右手首が右ひじより上になる
-		if (r_elbow[1] - keypoint[1]) < 0:
-			hand_down = True
-		if hand_down == True and (r_elbow[1] - keypoint[1]) >= 0 and pixel_per_second[1] >= threshold_handupSpeed and np.abs(pixel_per_second[1]) <= outliers:
-			hand_down = False
-			print("HandUp!")
+        # 右ひじより右手首が下の状態から、ある程度の速さ(y軸)で右手首が右ひじより上になる
+        if (r_elbow[1] - keypoint[1]) < 0:
+        	hand_down = True
+        if hand_down == True and (r_elbow[1] - keypoint[1]) >= 0 and pixel_per_second[1] >= threshold_handupSpeed and np.abs(pixel_per_second[1]) <= outliers:
+        	hand_down = False
+        	print("HandUp!")
+    """
 
     # Swing
-    """
     elif number == 2:
     	threshold_swingSpeed = 20
     	howlong_swing_interval = 0.5
@@ -77,7 +77,16 @@ def recognizingGesture(keypoint, old_keypoint, number):
 
     # Safe
     elif number == 3:
-        return
+        # 左手用
+        delta_pixel_left = l_wrist - old_r_wrist
+        delta_pixel_left_standardized = delta_pixel_left / standard_of_distance
+        pixel_per_second_left = delta_pixel_left_standardized / delta_time
+
+        threshold_safeSpeed = 20
+
+        # 両手をある程度の速度(x軸)で広げた時
+        if pixel_per_second[0] <= -threshold_safeSpeed and pixel_per_second_left[0] >= threshold_safeSpeed:
+        	print('Safe!')
 
 
 # ------------------------------------------------------------------------
