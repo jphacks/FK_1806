@@ -6,10 +6,11 @@ import time
 
 # 実行のループをフレーム数に合わせる
 frame = 0
+one_time = 0
 
 while True:
     # ループに入った瞬間の時刻を取得
-    frameTime = time.time()
+    frame_time = time.time()
 
     # JSONファイルの前の数字は12桁
     index = "{0:012d}".format(frame)
@@ -54,13 +55,40 @@ while True:
     r_bigtoe   = kp2d[22]
     l_smalltoe = kp2d[20]
     r_smalltoe = kp2d[23]
+        
+    if frame != 0: # 前の座標が0の時（検出されたない時）は外れ値として処理しよう
+        # 鼻が検出されている時
+        if nose[0] != 0:
+            # 右目が検出されていたら鼻と右目との距離を距離（ピクセル）の基準とする
+            if r_eye[0] != 0:
+                standard_of_distance = nose - r_eye
+                #print('standard_of_distance by r_eye :', standard_of_distance)
+            # 右目が検出されていない時は鼻と左目との距離を距離（ピクセル）の基準とする
+            elif l_eye[0] != 0:
+                standard_of_distance = -(nose - l_eye)
+                #print('standard_of_distance by l_eye :', standard_of_distance)
+        else:
+            frame += 1 # JSONを更新するために必要
+            continue
 
-    if frame != 0: # 前の座標が0の時（検出されたない時）はループを抜けときたい
-        pixPerFrame = r_wrist - old_r_wrist
-        pixPerSecond = (r_wrist - old_r_wrist) / (frameTime - old_frameTime)
+        delta_pixel = r_wrist - old_r_wrist
+        delta_time = frame_time - old_frame_time
 
-        print('pix/frame :', pixPerFrame)
-        print('pix/second', pixPerSecond)
+        delta_pixel_standardized = delta_pixel / standard_of_distance
+        pixel_per_second = delta_pixel_standardized / delta_time
+
+        #print('pixel_per_second :', pixel_per_second)
+        #print()
+
+        # とりあえずバイバイするジェスチャ→右手首が右ひじより上にあって、内側へある程度早い速度で振った後
+        # １秒以内に外側にある程度早い速度で振る
+        if (r_shoulder[1]-r_wrist[1])>=0 and pixel_per_second[0] >= 20 and pixel_per_second[0] <= 50:
+            gesture_flag = True
+            one_time = frame_time
+        if (r_shoulder[1]-r_wrist[1])>=0 and pixel_per_second[0] <= -20 and pixel_per_second[0] >= -50:
+            interval = frame_time - one_time
+            if interval <= 1:
+                print('Did you Bye Bye?')
 
     old_nose       = nose
     old_l_eye      = l_eye
@@ -89,9 +117,9 @@ while True:
     old_r_smalltoe = r_smalltoe
 
     # 次フレームまでに現在のフレームを記憶させる
-    old_frameTime = frameTime
+    old_frame_time = frame_time
 
-    print('r_wrist :', r_wrist)
+    #print('r_wrist :', r_wrist)
 
     #print(kp2d)
 
