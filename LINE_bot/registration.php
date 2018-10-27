@@ -1,5 +1,7 @@
 <?php
-$access_token = 'gcqvTOL50GecC9o9+BYcBqFODfFNrHQJfEc1et/mK8isKswHX36eXYEc5ho8Gm+z0w4+qxhZsWtHsZYEdyx1P1ZtvztHqMLhzNhd/OOEkgQIutiLPv3LSptdeBmtkqtuuX7DM59Xk+ixECMBvxqC5AdB04t89/1O/w1cDnyilFU=';
+
+$fp = fopen('access_token.txt', 'r');
+$access_token = fgets($fp);
 
 // APIから送信されてきたイベントオブジェクトを取得
 $json_string = file_get_contents('php://input');
