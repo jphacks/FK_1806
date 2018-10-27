@@ -32,10 +32,11 @@ while True:
     #if x.max() > threshold:
     # 周波数分布に偏りが少なく、高周波域の総和が高く、最大値が低音でない音→スナップ音に近い音を抽出
     if (amp<=noize_threshold).all() and amp[450:512].sum()>snap_threshold and amp[0:512].argmax()>maxamp_threshold:
-    	print(amp[450:512].sum())
-    	plt.plot(amp)
-    	plt.ylim([0,100])
-    	plt.show()
+        print(amp[450:512].sum())
+        plt.plot(amp)
+        plt.ylim([0,100])
+        plt.show()
+        
+        stream.close()
+        p.terminate()
 
-stream.close()
-p.terminate()
