@@ -89,21 +89,8 @@ def getKeyPoints_fromJSON():
                     frame += 1 # JSONを更新するために必要
                     continue
 
-                delta_pixel = r_wrist - old_r_wrist
-                delta_time = frame_time - old_frame_time
+                recognizingGesture(r_wrist, old_r_wrist, 1)   # ByeBye
 
-                delta_pixel_standardized = delta_pixel / standard_of_distance
-                pixel_per_second = delta_pixel_standardized / delta_time
-
-                # とりあえずバイバイするジェスチャ→右手首が右ひじより上にあって、内側へある程度早い速度で振った後
-                # １秒以内に外側にある程度早い速度で振る
-                if (r_shoulder[1] - r_wrist[1])>=0 and pixel_per_second[0] >= 20 and pixel_per_second[0] <= 50:
-                    gesture_flag = True
-                    one_time = frame_time
-                if (r_shoulder[1] - r_wrist[1])>=0 and pixel_per_second[0] <= -20 and pixel_per_second[0] >= -50:
-                    interval = frame_time - one_time
-                    if interval <= 1:
-                        print('Did you Bye Bye?')
 
                 # スナップ音が検知されてから2秒間の間ジェスチャを認識させる
                 interval_of_recognizingGesture += delta_time
@@ -147,6 +134,35 @@ def getKeyPoints_fromJSON():
         frame += 1
 
 
+# number 1 => ByeBye
+# number 2 => 
+# number 3 => 
+def recognizingGesture(keypoint, old_keypoint, number):
+    delta_pixel = keypoint - old_keypoint
+    delta_time = frame_time - old_frame_time
+    delta_pixel_standardized = delta_pixel / standard_of_distance
+    pixel_per_second = delta_pixel_standardized / delta_time
+
+    outliers = 50   # 外れ値
+
+    # ByeBye
+    if number == 1:
+        threshold_byebyeSpeed = 20
+        howlong_byebye_interval = 1   # 秒
+        # 右手首が右ひじより上にあって、内側へある程度早い速度(x軸)で振った後
+        # １秒以内に外側にある程度早い速度(x軸)で振る
+        if (r_shoulder[1] - keypoint[1])>=0 and pixel_per_second[0] >= threshold_byebyeSpeed and pixel_per_second[0] <= outliers:
+            byebye_flag = True
+            byebyeing_time = frame_time
+        if byebye_flag == True and (r_shoulder[1] - keypoint[1])>=0 and pixel_per_second[0] <= -threshold_byebyeSpeed and pixel_per_second[0] >= -outliers:
+            interval_of_byebye = frame_time - byebyeing_time   # 右手をある程度早い速度で振ってから外側に振るまでの時間
+            if interval_of_byebye <= howlong_byebye_interval:
+                print('Did you Bye Bye?')
+
+    elif number == 2:
+        return
+    elif number == 3:
+        return
 # ------------------------------------------------------------------------
 
 if __name__ == "__main__":
@@ -169,12 +185,5 @@ if __name__ == "__main__":
 
 
     getKeyPoints_fromJSON()
-
-    """
-    executor = concurrent.futures.ProcessPoolExecutor(max_workers=2)
-    executor.submit(readJSON)
-    executor.submit(threshold)
-    print("hello")
-    """
 
 
