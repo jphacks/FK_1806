@@ -21,8 +21,8 @@ def listenSNAP_withMike():
 
 
 # number 1 => ByeBye
-# number 2 => 
-# number 3 => 
+# number 2 =>
+# number 3 =>
 def recognizingGesture(keypoint, old_keypoint, number):
     global delta_time   # mainの方で使うから
 
@@ -35,36 +35,38 @@ def recognizingGesture(keypoint, old_keypoint, number):
 
     # ByeBye
     if number == 1:
-        threshold_byebyeSpeed = 15
+        threshold_byebyeSpeed = 20
         howlong_byebye_interval = 1
-        global byebyeing_time   # mainのとこで定義してるやつ
+        global byebye_time   # mainのとこで定義してるやつ
 
         # Safeとの誤検出が多くなったため、左手の情報も考慮する
         delta_pixel_left = l_wrist - old_l_wrist
         delta_pixel_left_standardized = delta_pixel_left / standard_of_distance
         pixel_per_second_left = delta_pixel_left_standardized / delta_time
 
-        if np.abs(pixel_per_second_left) <= threshold_byebyeSpeed:
+        byebye_time += delta_time
+
+        if byebye_time >= -1 and np.abs(pixel_per_second_left[0]) <= 5:
             # 右手首が右ひじより上にあって、内側(左側)へある程度の速度(x軸)で振った後
             # 一定時間以内に外側(右側)にある程度の速度(x軸)で振る
             if (r_elbow[1] - keypoint[1]) >= 0 and pixel_per_second[0] >= threshold_byebyeSpeed and np.abs(pixel_per_second[0]) <= outliers:
-                byebyeing_time = frame_time
-            if (frame_time - byebyeing_time) <= howlong_byebye_interval and (r_elbow[1] - keypoint[1]) >= 0 and pixel_per_second[0] <= -threshold_byebyeSpeed and np.abs(pixel_per_second[0]) <= outliers:
-                byebyeing_time = 0
+                byebye_time = -1
+            if byebye_time < 0 and (r_elbow[1] - keypoint[1]) >= 0 and pixel_per_second[0] <= -threshold_byebyeSpeed and np.abs(pixel_per_second[0]) <= outliers:
+                byebye_time = -(howlong_byebye_interval+1)
                 print('Bye Bye!')
 
     # HandUp
     elif number == 2:
-        threshold_handupSpeed = 15
+        threshold_handupSpeed = 25
         global hand_down   # 右手首が右ひじよりも下にあるか否か
 
         # 右ひじより右手首が下の状態から、ある程度の速さ(y軸)で右手首が右ひじより上になる
         if (r_elbow[1] - keypoint[1]) < 0:
             hand_down = True
-        if hand_down == True and (r_elbow[1] - keypoint[1]) >= 0 and pixel_per_second[1] >= threshold_handupSpeed and np.abs(pixel_per_second[1]) <= outliers:
+        if hand_down == True and (r_elbow[1] - keypoint[1]) >= 0 and -pixel_per_second[1] >= threshold_handupSpeed and np.abs(pixel_per_second[1]) <= outliers:
             hand_down = False
             print("HandUp!")
-   
+
     # Safe
     elif number == 3:
         # 左手用
@@ -76,12 +78,13 @@ def recognizingGesture(keypoint, old_keypoint, number):
         howlong_safe_interval = 1
         global safe_interval
 
+        safe_interval += delta_time
+
         # 直前にsafeの判定がない
-        if safe_interval < howlong_safe_interval:
-            safe_interval += delta_time
+        if safe_interval >= 0 :
             # 両手をある程度の速度(x軸)で広げた時
-            if pixel_per_second[0] <= -threshold_safeSpeed and pixel_per_second_left[0] >= threshold_safeSpeed:
-                safe_interval = 0
+            if pixel_per_second[0] <= -threshold_safeSpeed and pixel_per_second_left[0] >= threshold_safeSpeed and np.abs(pixel_per_second[1]) <= outliers:
+                safe_interval = -howlong_safe_interval
                 print('Safe!')
 
 
@@ -112,7 +115,7 @@ if __name__ == "__main__":
     delta_time = 0
 
     interval_of_recognizingGesture = 0
-    byebyeing_time = 0
+    byebye_time = 0
     #swinging_time = 0
     hand_down = False
     safe_interval = 0
@@ -159,7 +162,7 @@ if __name__ == "__main__":
         l_elbow    = kp2d[6]
         r_elbow    = kp2d[3]
         l_wrist    = kp2d[7]
-        r_wrist    = kp2d[4]    
+        r_wrist    = kp2d[4]
         mid_hip    = kp2d[8]
         l_hip      = kp2d[12]
         r_hip      = kp2d[9]
@@ -173,7 +176,7 @@ if __name__ == "__main__":
         r_bigtoe   = kp2d[22]
         l_smalltoe = kp2d[20]
         r_smalltoe = kp2d[23]
-            
+
         #if snapped == True:
         if snapped == False or snapped == True:
             if frame != 0:   # 偏差が必要なので2フレーム目から処理を行う
@@ -193,14 +196,14 @@ if __name__ == "__main__":
 
                 # スナップ音が検知されてから2秒間の間ジェスチャを認識させる
                 interval_of_recognizingGesture += delta_time
-                print('recognizing gesture...')
+                #print('recognizing gesture...')
 
         else:
             interval_of_recognizingGesture = 0
 
         if interval_of_recognizingGesture > 2:
             snapped = False
-            print('finish recognizing')
+            #print('finish recognizing')
 
         old_nose       = nose
         old_l_eye      = l_eye
@@ -213,7 +216,7 @@ if __name__ == "__main__":
         old_l_elbow    = l_elbow
         old_r_elbow    = r_elbow
         old_l_wrist    = l_wrist
-        old_r_wrist    = r_wrist    
+        old_r_wrist    = r_wrist
         old_mid_hip    = mid_hip
         old_l_hip      = l_hip
         old_r_hip      = r_hip
@@ -231,5 +234,3 @@ if __name__ == "__main__":
         old_frame_time = frame_time   # 次フレームまでに現在のフレームを記憶させる
 
         frame += 1
-
-
