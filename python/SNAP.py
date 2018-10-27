@@ -1,6 +1,5 @@
 import json
 import numpy as np
-#import cv2
 import os
 import time
 import pyaudio
@@ -37,18 +36,30 @@ def recognizingGesture(keypoint, old_keypoint, number):
     # ByeBye
     if number == 1:
         threshold_byebyeSpeed = 20
-        howlong_byebye_interval = 1
+        howlong_byebye_interval = 0.5
         global byebyeing_time   # mainのとこで定義してるやつ
 
-        # 右手首が右ひじより上にあって、内側へある程度早い速度(x軸)で振った後
-        # １秒以内に外側にある程度早い速度(x軸)で振る
-        if (r_shoulder[1] - keypoint[1])>=0 and pixel_per_second[0] >= threshold_byebyeSpeed and pixel_per_second[0] <= outliers:
+        # 右手首が右ひじより上にあって、内側(左側)へある程度早い速度(x軸)で振った後
+        # 一定時間以内に外側(右側)にある程度早い速度(x軸)で振る
+        if (r_shoulder[1] - keypoint[1]) >= 0 and pixel_per_second[0] >= threshold_byebyeSpeed and pixel_per_second[0] <= outliers:
             byebyeing_time = frame_time
-        if  (frame_time - byebyeing_time) <= howlong_byebye_interval and (r_shoulder[1] - keypoint[1])>=0 and pixel_per_second[0] <= -threshold_byebyeSpeed and pixel_per_second[0] >= -outliers:
+        if (frame_time - byebyeing_time) <= howlong_byebye_interval and (r_shoulder[1] - keypoint[1]) >= 0 and pixel_per_second[0] <= -threshold_byebyeSpeed and pixel_per_second[0] >= -outliers:
             print('Did you Bye Bye?')
 
+    # Swing
     elif number == 2:
-        return
+    	threshold_swingSpeed = 20
+    	howlong_swing_interval = 0.5
+    	global swinging_time   # mainのとこで定義してるやつ
+
+    	# 右手首が右ひじより上、首より右にあって、内側(左側)へある程度早い速度(x軸)で振った後
+    	# 一定時間以内に首より左側にある程度早い速度で振る
+    	if (r_shoulder[1] - keypoint[1]) >= 0 and (neck[0] - keypoint[0]) >= 0 and pixel_per_second[0] >= threshold_swingSpeed and pixel_per_second[0] <= outliers:
+    		swinging_time = frame_time
+    	if (frame_time - swinging_time) <= howlong_swing_interval and (neck[0] - keypoint[0]) < 0 and pixel_per_second[0] <= -threshold_swingSpeed and pixel_per_second[0] >= -outliers:
+    		print('Did you Swing?') 
+
+    # UpnDown
     elif number == 3:
         return
 
@@ -63,8 +74,8 @@ if __name__ == "__main__":
     RATE = 44100
     RECORD_SECONDS = 2
     snap_threshold = 7
-    noize_threshold = 30
-    maxamp_threshold = 20
+    noize_threshold = 50
+    maxamp_threshold = 15
     p = pyaudio.PyAudio()
     stream = p.open(format = FORMAT,
         channels = CHANNELS,
@@ -81,6 +92,7 @@ if __name__ == "__main__":
 
     interval_of_recognizingGesture = 0
     byebyeing_time = 0
+    swinging_time = 0
 
     while True:
         frame_time = time.time()   # ループに入った瞬間の時刻を取得
@@ -151,6 +163,8 @@ if __name__ == "__main__":
                     continue
 
                 recognizingGesture(r_wrist, old_r_wrist, 1)   # ByeBye
+                recognizingGesture(r_wrist, old_r_wrist, 2)   # Swing
+                recognizingGesture(r_wrist, old_r_wrist, 3)   # UpnDown
 
 
                 # スナップ音が検知されてから2秒間の間ジェスチャを認識させる
