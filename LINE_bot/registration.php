@@ -58,19 +58,33 @@ if(strpos($sent_message, "登録")!==false){
 }
 // 上記のIR機器登録のconfirmに対する返答に対して
 if($IRregister=="yes"){
-  $content = file_get_contents("http://73161605.ngrok.io/cgi-bin/main.py");
-  if ($content){
-    sending(reply("SNAPが赤外線登録モードになりました！${kirara}\n赤外線受信部に向かって登録する赤外線を送信してください"));
-  } else{
-    sending(reply("問題が生じたためSNAPを赤外線登録モードにできませんでした（泣）\nもうしばらく経ってからお試しください\n${content}"));
-  }
-}if($IRregister=="no"){
+  sending(buttons(
+  "登録番号を選択してください\nすでに登録されている番号は上書きされます",
+  "登録番号を選択してください\nすでに登録されている番号は上書きされます",
+  "1",
+  "gesture_index=1&mode=1",
+  "2",
+  "gesture_index=2&mode=1",
+  "3",
+  "gesture_index=3&mode=1"
+  ));
+}
+else if($IRregister=="no"){
   sending(buttons(
     "中止しました\n使い方を知りたい場合は以下のボタンを押してみてください${brown}",
     "中止しました\n使い方を知りたい場合は以下のボタンを押してみてください${brown}",
     "使い方を見る",
     "how_to=1"
   ));
+}
+
+if($mode==1){
+  $content = file_get_contents("http://73161605.ngrok.io/cgi-bin/main.py");
+  if ($content){
+    sending(reply("SNAPが赤外線登録モードになりました！${kirara}\n赤外線受信部に向かって登録する赤外線を送信してください"));
+  } else{
+    sending(reply("問題が生じたためSNAPを赤外線登録モードにできませんでした（泣）\nもうしばらく経ってからお試しください\n${content}"));
+  }
 }
 
 

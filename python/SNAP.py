@@ -35,31 +35,47 @@ def recognizingGesture(keypoint, old_keypoint, number):
 
     # ByeBye
     if number == 1:
-        threshold_byebyeSpeed = 20
-        howlong_byebye_interval = 0.5
+        threshold_byebyeSpeed = 15
+        howlong_byebye_interval = 1
         global byebyeing_time   # mainのとこで定義してるやつ
 
-        # 右手首が右ひじより上にあって、内側(左側)へある程度早い速度(x軸)で振った後
-        # 一定時間以内に外側(右側)にある程度早い速度(x軸)で振る
-        if (r_shoulder[1] - keypoint[1]) >= 0 and pixel_per_second[0] >= threshold_byebyeSpeed and pixel_per_second[0] <= outliers:
+        # 右手首が右ひじより上にあって、内側(左側)へある程度の速度(x軸)で振った後
+        # 一定時間以内に外側(右側)にある程度の速度(x軸)で振る
+        if (r_elbow[1] - keypoint[1]) >= 0 and pixel_per_second[0] >= threshold_byebyeSpeed and np.abs(pixel_per_second[0]) <= outliers:
             byebyeing_time = frame_time
-        if (frame_time - byebyeing_time) <= howlong_byebye_interval and (r_shoulder[1] - keypoint[1]) >= 0 and pixel_per_second[0] <= -threshold_byebyeSpeed and pixel_per_second[0] >= -outliers:
-            print('Did you Bye Bye?')
+        if (frame_time - byebyeing_time) <= howlong_byebye_interval and (r_elbow[1] - keypoint[1]) >= 0 and pixel_per_second[0] <= -threshold_byebyeSpeed and np.abs(pixel_per_second[0]) <= outliers:
+            byebyeing_time = 0   # フラグ的役割
+            print('Bye Bye!')
+
+    # HandUp
+	elif number == 2:
+		threshold_handupSpeed = 20
+		global hand_down   # 右手首が右ひじよりも下にあるか否か
+
+		# 右ひじより右手首が下の状態から、ある程度の速さ(y軸)で右手首が右ひじより上になる
+		if (r_elbow[1] - keypoint[1]) < 0:
+			hand_down = True
+		if hand_down == True and (r_elbow[1] - keypoint[1]) >= 0 and pixel_per_second[1] >= threshold_handupSpeed and np.abs(pixel_per_second[1]) <= outliers:
+			hand_down = False
+			print("HandUp!")
 
     # Swing
+    """
     elif number == 2:
     	threshold_swingSpeed = 20
     	howlong_swing_interval = 0.5
     	global swinging_time   # mainのとこで定義してるやつ
 
-    	# 右手首が右ひじより上、首より右にあって、内側(左側)へある程度早い速度(x軸)で振った後
-    	# 一定時間以内に首より左側にある程度早い速度で振る
+    	# 右手首が右ひじより上、首より右にあって、内側(左側)へある程度の速度(x軸)で振った後
+    	# 一定時間以内に右手首を首より左にする
     	if (r_shoulder[1] - keypoint[1]) >= 0 and (neck[0] - keypoint[0]) >= 0 and pixel_per_second[0] >= threshold_swingSpeed and pixel_per_second[0] <= outliers:
     		swinging_time = frame_time
-    	if (frame_time - swinging_time) <= howlong_swing_interval and (neck[0] - keypoint[0]) < 0 and pixel_per_second[0] <= -threshold_swingSpeed and pixel_per_second[0] >= -outliers:
+    	if (frame_time - swinging_time) <= howlong_swing_interval and (neck[0] - keypoint[0]) < 0 and pixel_per_second[0] >= -outliers:
+    		swinging_time = 0   # フラグ的役割
     		print('Did you Swing?') 
+    """
 
-    # UpnDown
+    # Safe
     elif number == 3:
         return
 
@@ -92,7 +108,8 @@ if __name__ == "__main__":
 
     interval_of_recognizingGesture = 0
     byebyeing_time = 0
-    swinging_time = 0
+    #swinging_time = 0
+    hand_down = False
 
     while True:
         frame_time = time.time()   # ループに入った瞬間の時刻を取得
@@ -151,7 +168,8 @@ if __name__ == "__main__":
         l_smalltoe = kp2d[20]
         r_smalltoe = kp2d[23]
             
-        if snapped == True:
+        #if snapped == True:
+        if snapped == False or snapped == True:
             if frame != 0:   # 偏差が必要なので2フレーム目から処理を行う
                 if nose[0] != 0:   # 鼻が検出されている時
                     if r_eye[0] != 0:     # 右目が検出されていたら鼻と右目との距離を距離（ピクセル）の基準とする
@@ -163,8 +181,8 @@ if __name__ == "__main__":
                     continue
 
                 recognizingGesture(r_wrist, old_r_wrist, 1)   # ByeBye
-                recognizingGesture(r_wrist, old_r_wrist, 2)   # Swing
-                recognizingGesture(r_wrist, old_r_wrist, 3)   # UpnDown
+                recognizingGesture(r_wrist, old_r_wrist, 2)   # HandUp
+                recognizingGesture(r_wrist, old_r_wrist, 3)   # Safe
 
 
                 # スナップ音が検知されてから2秒間の間ジェスチャを認識させる
