@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import urllib.request
 import urllib.parse
 import concurrent.futures
-
+import asyncio
 
 def listenSNAP_withMike():
     data = stream.read(chunk)
@@ -18,14 +18,13 @@ def listenSNAP_withMike():
 
     # 周波数分布に偏りが少なく、高周波域の総和が高く、最大値が低音でない音→スナップ音に近い音を抽出
     if (amp<=noize_threshold).all() and amp[450:512].sum()>snap_threshold and amp[0:512].argmax()>maxamp_threshold:
-        #print(amp[450:512].sum())
         print('snapped!')
         return True
 
 # number 1 => ByeBye
 # number 2 => HandUp
 # number 3 => Safe
-def recognizingGesture(keypoint, old_keypoint, number):
+async def recognizingGesture(keypoint, old_keypoint, number):
     global delta_time   # mainの方で使うから
 
     delta_pixel = keypoint - old_keypoint
@@ -57,12 +56,11 @@ def recognizingGesture(keypoint, old_keypoint, number):
                 byebye_time = -(howlong_byebye_interval+1)
                 print('Bye Bye!')
 
-                executor = concurrent.futures.ProcessPoolExecutor(max_workers=2)
-                executor.submit(get(number))
+                await get(number)
 
     # HandUp
     elif number == 2:
-        threshold_handupSpeed = 25
+        threshold_handupSpeed = 30
         global hand_down   # 右手首が右ひじよりも下にあるか否か
 
         # 右ひじより右手首が下の状態から、ある程度の速さ(y軸)で右手首が右ひじより上になる
@@ -72,8 +70,7 @@ def recognizingGesture(keypoint, old_keypoint, number):
             hand_down = False
             print("HandUp!")
 
-            executor = concurrent.futures.ProcessPoolExecutor(max_workers=2)
-            executor.submit(get(number))
+            await get(number)
 
     # Safe
     elif number == 3:
@@ -82,7 +79,7 @@ def recognizingGesture(keypoint, old_keypoint, number):
         delta_pixel_left_standardized = delta_pixel_left / standard_of_distance
         pixel_per_second_left = delta_pixel_left_standardized / delta_time
 
-        threshold_safeSpeed = 15
+        threshold_safeSpeed = 20
         howlong_safe_interval = 1
         global safe_interval
 
@@ -94,20 +91,19 @@ def recognizingGesture(keypoint, old_keypoint, number):
             if pixel_per_second[0] <= -threshold_safeSpeed and pixel_per_second_left[0] >= threshold_safeSpeed and np.abs(pixel_per_second[1]) <= outliers:
                 safe_interval = -howlong_safe_interval
                 print('Safe!')
+                
+                await get(number)
 
-                executor = concurrent.futures.ProcessPoolExecutor(max_workers=2)
-                executor.submit(get(number))
+async def get(gesture_number):
+    params = {
+        "number": gesture_number
+    }
+    p = urllib.parse.urlencode(params)
+    url = "http://fullfill.sakura.ne.jp/JPHACKS2018/server.php?" + p
 
-def get(gesture_number):
-	params = {
-    	"number": gesture_number
-	}
-	p = urllib.parse.urlencode(params)
-	url = "http://fullfill.sakura.ne.jp/JPHACKS2018/server.php?" + p
-
-	with urllib.request.urlopen(url) as res:
-		html = res.read().decode("utf-8")
-		print(html)
+    with urllib.request.urlopen(url) as res:
+        html = res.read().decode("utf-8")
+        print(html)
 
 # ------------------------------------------------------------------------
 
@@ -118,9 +114,9 @@ if __name__ == "__main__":
     CHANNELS = 1
     RATE = 44100
     RECORD_SECONDS = 2
-    snap_threshold = 7
     noize_threshold = 50
-    maxamp_threshold = 15
+    snap_threshold = 2.5
+    maxamp_threshold = 40
     p = pyaudio.PyAudio()
     stream = p.open(format = FORMAT,
         channels = CHANNELS,
@@ -134,6 +130,7 @@ if __name__ == "__main__":
     one_time = 0
     snapped = False
     delta_time = 0
+    snap_interval = 10
 
     interval_of_recognizingGesture = 0
     byebye_time = 0
@@ -210,21 +207,25 @@ if __name__ == "__main__":
                     frame += 1 # JSONを更新するために必要
                     continue
 
-                recognizingGesture(r_wrist, old_r_wrist, 1)   # ByeBye
-                recognizingGesture(r_wrist, old_r_wrist, 2)   # HandUp
-                recognizingGesture(r_wrist, old_r_wrist, 3)   # Safe
+                #recognizingGesture(r_wrist, old_r_wrist, 1)   # ByeBye
+                #recognizingGesture(r_wrist, old_r_wrist, 2)   # HandUp
+                #recognizingGesture(r_wrist, old_r_wrist, 3)   # Safe
 
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(recognizingGesture(r_wrist, old_r_wrist, 1))   # ByeBye
+                loop.run_until_complete(recognizingGesture(r_wrist, old_r_wrist, 2))   # HandUp
+                loop.run_until_complete(recognizingGesture(r_wrist, old_r_wrist, 3))   # Safe
 
                 # スナップ音が検知されてから2秒間の間ジェスチャを認識させる
                 interval_of_recognizingGesture += delta_time
-                #print('recognizing gesture...')
+                print('recognizing gesture...')
 
         else:
             interval_of_recognizingGesture = 0
 
-        if interval_of_recognizingGesture > 2:
+        if interval_of_recognizingGesture > snap_interval:
             snapped = False
-            #print('finish recognizing')
+            print('finish recognizing')
 
         old_nose       = nose
         old_l_eye      = l_eye
