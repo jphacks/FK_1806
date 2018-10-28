@@ -4,6 +4,7 @@ import pigpio
 import time
 import sys
 import cgi
+import os
 
 UNDER_SERVO_PIN = 4
 TOP_SERVO_PIN = 18
@@ -37,10 +38,17 @@ form = cgi.FieldStorage()
 
 if form["key"].value == "1":
     pi.set_servo_pulsewidth(UNDER_SERVO_PIN, MIN_PULSE_WIDTH)
+    time.sleep(1)
+    pi.set_servo_pulsewidth(TOP_SERVO_PIN, MIDDLE_PULSE_WIDTH - 500)
     fileWrite('current.txt', str(MIN_PULSE_WIDTH))
 elif form["key"].value == "2":
     pi.set_servo_pulsewidth(UNDER_SERVO_PIN, MIDDLE_PULSE_WIDTH)
+    time.sleep(1)
+    pi.set_servo_pulsewidth(TOP_SERVO_PIN, MIDDLE_PULSE_WIDTH)
     fileWrite('current.txt', str(MIDDLE_PULSE_WIDTH))
 elif form["key"].value == "3":
     pi.set_servo_pulsewidth(UNDER_SERVO_PIN, MAX_PULSE_WIDTH)
+    time.sleep(1)
+    pi.set_servo_pulsewidth(TOP_SERVO_PIN, MIDDLE_PULSE_WIDTH + 500)
     fileWrite('current.txt', str(MAX_PULSE_WIDTH))
+    os.system('sudo ./send.sh send')
