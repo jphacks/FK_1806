@@ -1,6 +1,6 @@
 # SNAP
 
-[![Product Name](image.png)](https://vimeo.com/297533613)
+[![Product Name]()](https://vimeo.com/297533613)
 
 ## 製品概要
 ### **ジェスチャ** × Tech
