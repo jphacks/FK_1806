@@ -10,6 +10,7 @@ import urllib.request
 import urllib.parse
 import concurrent.futures
 import asyncio
+import winsound
 
 def listenSNAP_withMike():
     data = stream.read(chunk)
@@ -19,13 +20,15 @@ def listenSNAP_withMike():
     # 周波数分布に偏りが少なく、高周波域の総和が高く、最大値が低音でない音→スナップ音に近い音を抽出
     if (amp<=noize_threshold).all() and amp[450:512].sum()>snap_threshold and amp[0:512].argmax()>maxamp_threshold:
         print('snapped!')
+        winsound.Beep(500, 500)
+
         return True
 
 # number 1 => ByeBye
 # number 2 => HandUp
 # number 3 => Safe
 async def recognizingGesture(keypoint, old_keypoint, number):
-    global delta_time   # mainの方で使うから
+    global delta_time, standard_of_distance   # mainの方で使うから
 
     delta_pixel = keypoint - old_keypoint
     delta_time = frame_time - old_frame_time
@@ -55,7 +58,6 @@ async def recognizingGesture(keypoint, old_keypoint, number):
             if byebye_time < 0 and (r_elbow[1] - keypoint[1]) >= 0 and pixel_per_second[0] <= -threshold_byebyeSpeed and np.abs(pixel_per_second[0]) <= outliers:
                 byebye_time = -(howlong_byebye_interval+1)
                 print('Bye Bye!')
-
                 await get(number)
 
     # HandUp
@@ -69,7 +71,6 @@ async def recognizingGesture(keypoint, old_keypoint, number):
         if hand_down == True and (r_elbow[1] - keypoint[1]) >= 0 and -pixel_per_second[1] >= threshold_handupSpeed and np.abs(pixel_per_second[1]) <= outliers:
             hand_down = False
             print("HandUp!")
-
             await get(number)
 
     # Safe
@@ -91,7 +92,6 @@ async def recognizingGesture(keypoint, old_keypoint, number):
             if pixel_per_second[0] <= -threshold_safeSpeed and pixel_per_second_left[0] >= threshold_safeSpeed and np.abs(pixel_per_second[1]) <= outliers:
                 safe_interval = -howlong_safe_interval
                 print('Safe!')
-                
                 await get(number)
 
 async def get(gesture_number):
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     RECORD_SECONDS = 2
     noize_threshold = 50
     snap_threshold = 2.5
-    maxamp_threshold = 40
+    maxamp_threshold = 25
     p = pyaudio.PyAudio()
     stream = p.open(format = FORMAT,
         channels = CHANNELS,
@@ -130,9 +130,10 @@ if __name__ == "__main__":
     one_time = 0
     snapped = False
     delta_time = 0
-    snap_interval = 10
+    snap_interval = 4
 
     interval_of_recognizingGesture = 0
+    standard_of_distance = 0
     byebye_time = 0
     #swinging_time = 0
     hand_down = False
@@ -196,6 +197,7 @@ if __name__ == "__main__":
         r_smalltoe = kp2d[23]
 
         if snapped == True:
+        #if snapped == False or snapped == True:
             if frame != 0:   # 偏差が必要なので2フレーム目から処理を行う
                 if nose[0] != 0:   # 鼻が検出されている時
                     if r_eye[0] != 0:     # 右目が検出されていたら鼻と右目との距離を距離（ピクセル）の基準とする
@@ -205,6 +207,10 @@ if __name__ == "__main__":
                 else:
                     frame += 1 # JSONを更新するために必要
                     continue
+
+                #recognizingGesture(r_wrist, old_r_wrist, 1)   # ByeBye
+                #recognizingGesture(r_wrist, old_r_wrist, 2)   # HandUp
+                #recognizingGesture(r_wrist, old_r_wrist, 3)   # Safe
 
                 loop = asyncio.get_event_loop()
                 loop.run_until_complete(recognizingGesture(r_wrist, old_r_wrist, 1))   # ByeBye
