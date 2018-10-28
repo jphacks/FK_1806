@@ -69,9 +69,9 @@ if(strpos($sent_message, "ジェスチャ")!==false or $how_to==1){
 if($mode==1){
   $content = file_get_contents("http://73161605.ngrok.io/cgi-bin/main.py");
   if ($content){
-    sending(reply("SNAPが赤外線登録モードになりました！${kirara}\n赤外線受信部に向かって登録する赤外線を送信してください"));
+    sending(reply("SNAPが赤外線登録モードになりました！\n赤外線受信部に向かってByeByeとして登録する赤外線を送信してください"));
   } else{
-    sending(reply("問題が生じたためSNAPを赤外線登録モードにできませんでした（泣）\nもうしばらく経ってからお試しください\n${content}"));
+    sending(reply("問題が生じたためSNAPを赤外線登録モードにできませんでした（泣）\nもうしばらく経ってからお試しください"));
   }
 }
 
