@@ -195,8 +195,7 @@ if __name__ == "__main__":
         l_smalltoe = kp2d[20]
         r_smalltoe = kp2d[23]
 
-        #if snapped == True:
-        if snapped == False or snapped == True:
+        if snapped == True:
             if frame != 0:   # 偏差が必要なので2フレーム目から処理を行う
                 if nose[0] != 0:   # 鼻が検出されている時
                     if r_eye[0] != 0:     # 右目が検出されていたら鼻と右目との距離を距離（ピクセル）の基準とする
@@ -206,10 +205,6 @@ if __name__ == "__main__":
                 else:
                     frame += 1 # JSONを更新するために必要
                     continue
-
-                #recognizingGesture(r_wrist, old_r_wrist, 1)   # ByeBye
-                #recognizingGesture(r_wrist, old_r_wrist, 2)   # HandUp
-                #recognizingGesture(r_wrist, old_r_wrist, 3)   # Safe
 
                 loop = asyncio.get_event_loop()
                 loop.run_until_complete(recognizingGesture(r_wrist, old_r_wrist, 1))   # ByeBye
