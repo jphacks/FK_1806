@@ -115,6 +115,5 @@ SNAPは、より直感的なインターフェースとして、ジェスチャ�
 ### 独自開発技術（Hack Dayで開発したもの）
 #### 2日間に開発した独自の機能・技術
 * フーリエ変換を用いたスナップ音の認識 [(Code)](https://github.com/jphacks/FK_1806/blob/master/python/SNAP.py#L15")
-* ジェスチャ(3種類)のリアルタイム認識 [(Code)](https://github.com/jphacks/FK_1806/blob/master/python/SNAP.py#L30")
-* 自作デバイスの制作
-
+* ジェスチャ(3種類)のリアルタイム認識 [(Code)](https://github.com/jphacks/FK_1806/blob/master/python/SNAP.py#L30")
+* 自作デバイスの制作
