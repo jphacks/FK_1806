@@ -1,6 +1,5 @@
 # SNAP
 
-## ↓動画↓
 [![SNAP-MOVIE](/image/snap_logo.jpeg)](https://vimeo.com/297533613)
 
 ## 製品概要
