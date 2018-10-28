@@ -1,6 +1,6 @@
 # SNAP
 
-[![Product Name]()](https://vimeo.com/297533613)
+[![SNAP](/image/snap_flow.jpeg)](https://vimeo.com/297533613)
 
 ## 製品概要
 ### **ジェスチャ** × Tech
@@ -82,11 +82,8 @@ SNAPは、より直感的なインターフェースとして、ジェスチャ�
 
 ![システムフロー](/image/snap_flow.jpeg)
 #### API・データ
-今回スポンサーから提供されたAPI、製品などの外部技術があれば記述をして下さい。
 
 * messaging API
-* 
-* 
 
 #### フレームワーク・ライブラリ・モジュール
 * OpenPose
