@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python 
 
 import pigpio
 import time
@@ -41,14 +41,16 @@ if form["key"].value == "1":
     time.sleep(1)
     pi.set_servo_pulsewidth(TOP_SERVO_PIN, MIDDLE_PULSE_WIDTH - 500)
     fileWrite('current.txt', str(MIN_PULSE_WIDTH))
+    os.system('sudo ./send.sh. send')
 elif form["key"].value == "2":
     pi.set_servo_pulsewidth(UNDER_SERVO_PIN, MIDDLE_PULSE_WIDTH)
     time.sleep(1)
     pi.set_servo_pulsewidth(TOP_SERVO_PIN, MIDDLE_PULSE_WIDTH)
     fileWrite('current.txt', str(MIDDLE_PULSE_WIDTH))
+    os.system('sudo ./send.sh. send')
 elif form["key"].value == "3":
     pi.set_servo_pulsewidth(UNDER_SERVO_PIN, MAX_PULSE_WIDTH)
     time.sleep(1)
     pi.set_servo_pulsewidth(TOP_SERVO_PIN, MIDDLE_PULSE_WIDTH + 500)
     fileWrite('current.txt', str(MAX_PULSE_WIDTH))
-    os.system('sudo ./send.sh send')
+    os.system('sudo ./send.sh. send')
