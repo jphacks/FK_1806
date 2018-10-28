@@ -1,6 +1,6 @@
 # SNAP
 
-[![Product Name](image.png)](https://www.youtube.com/watch?v=G5rULR53uMk)
+[![Product Name](image.png)](https://vimeo.com/297533613)
 
 ## 製品概要
 ### **ジェスチャ** ✖ Tech
@@ -45,12 +45,12 @@ IoTにより、それらのあらゆるモノがインターネットで繋が�
 #### 2. 複数の家電製品とそれに対応するジェスチャを登録
 あなたの家の家電製品を直感的に操作し、それらのスイッチを一元的に管理することができます。  
 
-①バイバイ（仮）  
-![①バイバイ（仮）](/image/ByeByeHQ.gif)  
-②ハンズアップ（仮）  
-![②ハンズアップ（仮）](/image/HandUpHQ.gif)  
-③セーフ（仮）  
-![③セーフ（仮）](/image/SafeHQ.gif)
+①バイバイ  
+![①バイバイ](/image/ByeByeHQ.gif)  
+②ハンズアップ  
+![②ハンズアップ](/image/HandUpHQ.gif)  
+③セーフ  
+![③セーフ](/image/SafeHQ.gif)
 
 #### 3. 左右180°内で、指示された家電製品の方向へデバイスが動く
 
@@ -85,6 +85,8 @@ SNAPは、より直感的なインターフェースとして、ジェスチャ�
 #### フレームワーク・ライブラリ・モジュール
 * 
 * 
+
+![フローチャート](/image/snap_flow.jpeg)
 
 #### デバイス
 * 
