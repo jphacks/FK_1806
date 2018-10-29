@@ -2,6 +2,9 @@
 
 [![SNAP-MOVIE](/image/snap_logo.jpeg)](https://vimeo.com/297533613)
 
+動画URL(Vimeo) : [https://vimeo.com/297533613](https://vimeo.com/297533613 "VimeoURL")
+
+
 ## 製品概要
 ### **ジェスチャ** × Tech
 
